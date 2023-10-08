@@ -8,6 +8,7 @@ Este es un proyecto de generación de códigos QR customizados construido con Ja
 ## Tecnologías
 - Java 8
 - SpringBoot 2.5.5
+- Springfox Swagger 2.9.2
 - ZXing 3.4.1
 
 ## Versiones
