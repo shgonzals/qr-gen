@@ -8,7 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,7 +46,7 @@ public class QRGeneratorApi {
 
 
     //@Deprecated
-    @PreAuthorize("hasRole('ROLE_ADMIIIN')")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "generateQRV2")
     @ApiOperation(value = "Genera un código QR en forma de puntos", notes = "Genera un código QR a partir del texto proporcionado.")
     @ApiResponses(value = {
