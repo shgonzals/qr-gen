@@ -1,8 +1,8 @@
 package com.shgonzal.qrgen.controllers;
 
 import com.shgonzal.qrgen.services.QRGeneratorService;
-import com.sun.istack.internal.NotNull;
 import io.swagger.annotations.*;
+import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
