@@ -1,14 +1,15 @@
 package com.shgonzal.qrgen.controllers;
 
 import com.shgonzal.qrgen.services.QRGeneratorService;
-import com.sun.istack.internal.NotNull;
 import io.swagger.annotations.*;
+import javax.validation.constraints.NotNull;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Api(value = "QR Generator", tags = "QRGeneratorApi")
+@Slf4j
 public class QRGeneratorApi {
 
     @Autowired
@@ -30,6 +32,7 @@ public class QRGeneratorApi {
     })
     public ResponseEntity<byte[]> generateQrCode(@ApiParam(value = "Texto para el código QR", required = true) @RequestParam("text") @NotNull String text) {
 
+        log.info("Generando QR en formato estandar...");
         try {
 
             byte[] qrCodeBytes = qrGeneratorService.generateQrCode(text);
@@ -47,7 +50,7 @@ public class QRGeneratorApi {
 
 
     //@Deprecated
-    @PreAuthorize("hasRole('ROLE_ADMIIIN')")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping(value = "generateQRV2")
     @ApiOperation(value = "Genera un código QR en forma de puntos", notes = "Genera un código QR a partir del texto proporcionado.")
     @ApiResponses(value = {
@@ -57,8 +60,9 @@ public class QRGeneratorApi {
     })
     public ResponseEntity<byte[]> generateQrCodeV2() {
 
-        try {
+        log.info("Generando QR en formato punteado...");
 
+        try {
             byte[] qrCodeBytes = qrGeneratorService.generateQrCodeV2();
 
             // Devuelve el código QR como una respuesta

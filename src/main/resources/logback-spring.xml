@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>/var/log/qrgen/qrgen.log</file>s
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%logger{36}] [%thread] [%line:%file] - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="KIBANA" class="ch.qos.logback.core.FileAppender">
+        <file>/var/log/qrgen/qrgen-kibana.log</file>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS};[%thread];%.-1level;%logger{36};%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Configuración del nivel de registro (puede ser DEBUG, INFO, WARN, ERROR) -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="KIBANA"/>
+    </root>
+</configuration>
