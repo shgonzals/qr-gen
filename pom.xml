@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.shgonzal</groupId>
 	<artifactId>qrgen</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<name>qrgen</name>
 	<description>QR Generator API</description>
 	<properties>

@@ -2,7 +2,7 @@ package com.shgonzal.qrgen.services;
 
 public interface QRGeneratorService {
 
-     byte[] generateQrCode(String text);
+     byte[] generateQrCode(String content, int[] colorRGB);
 
-     byte[] generateQrCodeV2();
+     byte[] generateDottedQrCode (String content, int[] colorRGB);
 }
