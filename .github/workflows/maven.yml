@@ -32,7 +32,8 @@ jobs:
       - name: Move and rename
         run: mv /home/silen/actions-runner/qr-gen/qr-gen/qr-gen/target/qrgen.jar /home/silen/actions-runner/deploys/qrgen.jar
       - name: Run JAR
-        run: java -jar /home/silen/actions-runner/deploys/qrgen.jar
+        run: nohup java -jar /home/silen/actions-runner/deploys/qrgen.jar > /dev/null 2>&1 &
+        #run: java -jar /home/silen/actions-runner/deploys/qrgen.jar
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     #- name: Update dependency graph
