@@ -1,5 +1,6 @@
 package com.shgonzal.qrgen.config;
 
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -31,9 +32,9 @@ public class SwaggerConfig {
         return new ApiInfo(
                 "QR-Gen",
                 "QR Generator API",
-                "1.0",
-                "http://codmind.com/terms",
-                new Contact("Codmind", "https://codmind.com", "apis@codmind.com"),
+                "0.0.3",
+                "",
+                new Contact("Sheila", "", "sh.gonzal.s@gmail.com"),
                 "",
                 "",
                 Collections.emptyList()
