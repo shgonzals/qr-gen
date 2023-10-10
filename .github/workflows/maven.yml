@@ -29,12 +29,12 @@ jobs:
     steps:
       - name: Generate JAR
         run: mvn package
-      - name: Stop service
-        run: sudo systemctl stop qrgen
+      #- name: Stop service
+      #  run: sudo systemctl stop qrgen
       - name: Move and rename
         run: mv /home/silen/actions-runner/qr-gen/qr-gen/qr-gen/target/qrgen.jar /home/silen/actions-runner/deploys/qrgen.jar
-      - name: Start service
-        run: sudo systemctl start qrgen
+      #- name: Start service
+      #  run: sudo systemctl start qrgen
       - name: Run JAR
         run: nohup java -jar /home/silen/actions-runner/deploys/qrgen.jar > /dev/null 2>&1 &
         #run: java -jar /home/silen/actions-runner/deploys/qrgen.jar
