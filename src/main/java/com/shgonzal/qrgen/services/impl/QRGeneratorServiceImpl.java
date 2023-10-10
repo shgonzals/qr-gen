@@ -87,7 +87,6 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
     private byte[] generateQRCodeImage(String text, int[] colorRGB){
         log.info("Generando imagen QR...");
 
-        String filePath = "./qrcode.png";
         final HashMap<EncodeHintType, Object> encodingHints = new HashMap<>();
         encodingHints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
         QRCode code = null;
@@ -98,11 +97,13 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
         }
         BufferedImage image = renderQRImage(code, Constants.SIZE, Constants.SIZE, 4, colorRGB);
 
-        try (FileOutputStream stream = new FileOutputStream(filePath)) {
+        try (FileOutputStream stream = new FileOutputStream(Constants.PNG_PATH)) {
             stream.write(bufferedImageToByteArray(image));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        deletePNG();
 
         return bufferedImageToByteArray(image);
     }
@@ -154,6 +155,14 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
         drawFinderPatternCircleStyle(graphics, leftPadding, topPadding + (inputHeight - FINDER_PATTERN_SIZE) * multiple, circleDiameter, rgb);
 
         return image;
+    }
+
+    private void deletePNG(){
+        File fileToDelete = new File(Constants.PNG_PATH);
+
+        if (fileToDelete.exists()) {
+            fileToDelete.delete();
+        }
     }
 
     private byte[] bufferedImageToByteArray(BufferedImage image) {

@@ -23,8 +23,11 @@ import java.util.Arrays;
 public class QRGeneratorApi {
 
     private final static String QR_API_VALUE = "Genera un código QR";
-    private final static String QR_API_NOTES = "Genera un código QR a partir del texto proporcionado, pasando un color y seleccionando una forma.";
+    private final static String QR_API_NOTES = "Genera un código QR a partir del texto o URL proporcionado, pasando un color en formato RGB y seleccionando un tipo de generación.";
 
+    private final static String API_PARAM = "Parámetros del proceso: \r\n- Content: Contenido del QR. Puede ser una URL o un mensaje. (Ejemplo: www.google.es)"
+                                            + "\r\n- RGB: Código de colores en RGB (Ejemplo: [0,0,0])"
+                                            + "\r\n- Type: Tipo de generación del QR. Valores permitidos: 1- QR básico. 2- QR punteado (Ejemplo: 1)";
     @Autowired
     private QRGeneratorService qrGeneratorService;
 
@@ -40,7 +43,7 @@ public class QRGeneratorApi {
     })
     //@Deprecated
     //@PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<byte[]> generateQrCodeByType(@ApiParam(value = "Texto para el código QR", required = true)
+    public ResponseEntity<byte[]> generateQrCodeByType(@ApiParam(value = API_PARAM, required = true)
                                                  @RequestBody QRRequestBody body) {
 
         log.info("Generando QR en formato por tipo...");

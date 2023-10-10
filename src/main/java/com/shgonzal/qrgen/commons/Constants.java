@@ -3,6 +3,7 @@ package com.shgonzal.qrgen.commons;
 public class Constants {
 
     public final static String FORMAT_PNG = "PNG";
+    public final static String PNG_PATH = "./qrcode.png";
     public final static int SIZE = 300;
     public final static int INT_0 = 0;
     public final static int INT_1 = 1;
