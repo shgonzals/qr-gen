@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Generate JAR
         run: mvn package
+      - name: Stop service
+        run: systemctl stop qrgen
       - name: Move and rename
         run: mv /home/silen/actions-runner/qr-gen/qr-gen/qr-gen/target/qrgen.jar /home/silen/actions-runner/deploys/qrgen.jar
       - name: Run JAR
