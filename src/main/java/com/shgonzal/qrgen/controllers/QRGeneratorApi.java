@@ -20,6 +20,7 @@ import java.util.Arrays;
 @RestController
 @Api(value = Constants.QR_GEN_API_DESC, tags = Constants.QR_GEN_API)
 @Slf4j
+@CrossOrigin
 public class QRGeneratorApi {
 
     private final static String QR_API_VALUE = "Genera un código QR";
