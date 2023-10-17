@@ -24,6 +24,7 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.basePackage("com.shgonzal.qrgen.controllers"))
                 .paths(PathSelectors.any())
                 .build()
+                .pathMapping("/api")
                 .apiInfo(getApiInfo())
                 ;
     }
