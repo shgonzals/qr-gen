@@ -3,9 +3,14 @@ package com.shgonzal.qrgen.controllers;
 import com.shgonzal.qrgen.commons.Constants;
 import com.shgonzal.qrgen.dto.QRRequestBody;
 import com.shgonzal.qrgen.services.QRGeneratorService;
-import io.swagger.annotations.*;
-import javax.validation.constraints.NotNull;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +23,7 @@ import java.util.Arrays;
 
 
 @RestController
-@Api(value = Constants.QR_GEN_API_DESC, tags = Constants.QR_GEN_API)
+@Tag(name = Constants.QR_GEN_API_DESC, description = Constants.QR_GEN_API)
 @Slf4j
 @CrossOrigin
 public class QRGeneratorApi {
@@ -32,20 +37,17 @@ public class QRGeneratorApi {
     @Autowired
     private QRGeneratorService qrGeneratorService;
 
-    @PostMapping(value = "generateQR")
-    @ApiOperation(value = QR_API_VALUE, notes = QR_API_NOTES)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = Constants.MESSAGE_200),
-            @ApiResponse(code = 400, message = Constants.MESSAGE_400),
-            @ApiResponse(code = 401, message = Constants.MESSAGE_401),
-            @ApiResponse(code = 403, message = Constants.MESSAGE_403),
-            @ApiResponse(code = 404, message = Constants.MESSAGE_404),
-            @ApiResponse(code = 500, message = Constants.MESSAGE_500)
-    })
-    //@Deprecated
-    //@PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<byte[]> generateQrCodeByType(@ApiParam(value = API_PARAM, required = true)
-                                                 @RequestBody QRRequestBody body) {
+    @PostMapping("/generateQR")
+    @Operation(summary = QR_API_VALUE, description = QR_API_NOTES, security = @SecurityRequirement(name = "bearer-key"))
+    @ApiResponse(responseCode = "200", description = Constants.MESSAGE_200,
+            content = @Content(mediaType = "image/png", schema = @Schema(type = "string", format = "binary")))
+    @ApiResponse(responseCode = "400", description = Constants.MESSAGE_400)
+    @ApiResponse(responseCode = "401", description = Constants.MESSAGE_401)
+    @ApiResponse(responseCode = "403", description = Constants.MESSAGE_403)
+    @ApiResponse(responseCode = "404", description = Constants.MESSAGE_404)
+    @ApiResponse(responseCode = "500", description = Constants.MESSAGE_500)
+    public ResponseEntity<byte[]> generateQrCodeByType(@Parameter(description = API_PARAM, required = true)
+                                                       @RequestBody QRRequestBody body) {
 
         log.info("Generando QR en formato por tipo...");
         boolean valid = validateBody(body);
