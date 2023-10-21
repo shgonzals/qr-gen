@@ -1,5 +1,7 @@
 package com.shgonzal.qrgen.controllers;
 
+import com.shgonzal.qrgen.commons.Constants;
+import com.shgonzal.qrgen.dto.QRRequestBody;
 import com.shgonzal.qrgen.services.QRGeneratorService;
 import io.swagger.annotations.*;
 import javax.validation.constraints.NotNull;
@@ -10,73 +12,86 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
 
 
 @RestController
-@Api(value = "QR Generator", tags = "QRGeneratorApi")
+@Api(value = Constants.QR_GEN_API_DESC, tags = Constants.QR_GEN_API)
 @Slf4j
+@CrossOrigin
 public class QRGeneratorApi {
 
+    private final static String QR_API_VALUE = "Genera un código QR";
+    private final static String QR_API_NOTES = "Genera un código QR a partir del texto o URL proporcionado, pasando un color en formato RGB y seleccionando un tipo de generación.";
+
+    private final static String API_PARAM = "Parámetros del proceso: \r\n- Content: Contenido del QR. Puede ser una URL o un mensaje. (Ejemplo: www.google.es)"
+                                            + "\r\n- RGB: Código de colores en RGB (Ejemplo: [0,0,0])"
+                                            + "\r\n- Type: Tipo de generación del QR. Valores permitidos: 1- QR básico. 2- QR punteado (Ejemplo: 1)";
     @Autowired
     private QRGeneratorService qrGeneratorService;
 
-    @GetMapping(value = "generateQR")
-    @ApiOperation(value = "Genera un código QR", notes = "Genera un código QR a partir del texto proporcionado.")
+    @PostMapping(value = "generateQR")
+    @ApiOperation(value = QR_API_VALUE, notes = QR_API_NOTES)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Código QR generado correctamente"),
-            @ApiResponse(code = 400, message = "Solicitud incorrecta"),
-            @ApiResponse(code = 500, message = "Error interno del servidor")
+            @ApiResponse(code = 200, message = Constants.MESSAGE_200),
+            @ApiResponse(code = 400, message = Constants.MESSAGE_400),
+            @ApiResponse(code = 401, message = Constants.MESSAGE_401),
+            @ApiResponse(code = 403, message = Constants.MESSAGE_403),
+            @ApiResponse(code = 404, message = Constants.MESSAGE_404),
+            @ApiResponse(code = 500, message = Constants.MESSAGE_500)
     })
-    public ResponseEntity<byte[]> generateQrCode(@ApiParam(value = "Texto para el código QR", required = true) @RequestParam("text") @NotNull String text) {
-
-        log.info("Generando QR en formato estandar...");
-        try {
-
-            byte[] qrCodeBytes = qrGeneratorService.generateQrCode(text);
-
-            // Devuelve el código QR como una respuesta
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_PNG);
-            headers.setContentLength(qrCodeBytes.length);
-
-            return new ResponseEntity<>(qrCodeBytes, headers, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
     //@Deprecated
     //@PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping(value = "generateQRV2")
-    @ApiOperation(value = "Genera un código QR en forma de puntos", notes = "Genera un código QR a partir del texto proporcionado.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Código QR generado correctamente"),
-            @ApiResponse(code = 400, message = "Solicitud incorrecta"),
-            @ApiResponse(code = 500, message = "Error interno del servidor")
-    })
-    public ResponseEntity<byte[]> generateQrCodeV2() {
+    public ResponseEntity<byte[]> generateQrCodeByType(@ApiParam(value = API_PARAM, required = true)
+                                                 @RequestBody QRRequestBody body) {
 
-        log.info("Generando QR en formato punteado...");
+        log.info("Generando QR en formato por tipo...");
+        boolean valid = validateBody(body);
+        if(!valid){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }else{
+            try {
 
-        try {
-            byte[] qrCodeBytes = qrGeneratorService.generateQrCodeV2();
+                byte[] qrCodeBytes = null;
 
-            // Devuelve el código QR como una respuesta
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_PNG);
-            headers.setContentLength(qrCodeBytes.length);
+                switch (body.getType()){
+                    case Constants.INT_1:
+                        qrCodeBytes = qrGeneratorService.generateQrCode(body.getContent(), body.getRgb());
+                        break;
+                    case Constants.INT_2:
+                        qrCodeBytes = qrGeneratorService.generateDottedQrCode(body.getContent(), body.getRgb());
+                        break;
+                }
 
-            return new ResponseEntity<>(qrCodeBytes, headers, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                HttpHeaders headers = new HttpHeaders();
+                if(qrCodeBytes.length > 0){
+                    // Devuelve el código QR como una respuesta
+                    headers.setContentType(MediaType.IMAGE_PNG);
+                    headers.setContentLength(qrCodeBytes.length);
+                }
+
+                log.info("Se ha generado QR en formato por tipo");
+                return new ResponseEntity<>(qrCodeBytes, headers, HttpStatus.OK);
+            } catch (Exception e) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
+
     }
 
+    private boolean validateBody(QRRequestBody body){
+       boolean valid = Boolean.TRUE;
+       boolean typeValid = body.getType() == Constants.INT_1 || body.getType() == Constants.INT_2;
+       boolean rgbValid = body.getRgb().length == Constants.INT_3 &&
+                          Arrays.stream(body.getRgb()).allMatch(code -> code >= Constants.INT_0 && code <= Constants.INT_255);
 
+       if(body.getContent().isEmpty() || !typeValid || !rgbValid){
+           valid = Boolean.FALSE;
+       }
 
+        return valid;
+    }
 
 }

@@ -8,7 +8,9 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.google.zxing.qrcode.encoder.ByteMatrix;
 import com.google.zxing.qrcode.encoder.Encoder;
 import com.google.zxing.qrcode.encoder.QRCode;
+import com.shgonzal.qrgen.commons.Constants;
 import com.shgonzal.qrgen.services.QRGeneratorService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -24,30 +26,32 @@ import java.io.IOException;
 import java.util.HashMap;
 
 @Service
+@Slf4j
 public class QRGeneratorServiceImpl implements QRGeneratorService {
 
-    private final Color customColor = new Color(255, 51, 178);
-
     @Override
-    public byte[] generateQrCode(String text) {
+    public byte[] generateQrCode(String content, int[] colorRGB) {
+        log.info("Generando QR en formato estandar...");
+
         MultiFormatWriter writer = new MultiFormatWriter();
         BitMatrix bitMatrix = null;
         ByteArrayOutputStream outputStream = null;
+        Color color = new Color(colorRGB[0], colorRGB[1], colorRGB[2]);
+
         try {
 
-            bitMatrix = writer.encode(text, BarcodeFormat.QR_CODE, 300, 300);
+            bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, Constants.SIZE, Constants.SIZE);
             outputStream = new ByteArrayOutputStream();
 
             //TODO: Implementar un selector RGB
             Color offColor = Color.WHITE;
-            //Color customColor = new Color(255, 51, 178);
 
             //background and logo
             //https://aboullaite.me/generate-qrcode-with-logo-image-using-zxing/
 
-            MatrixToImageConfig config = new MatrixToImageConfig(customColor.getRGB(), offColor.getRGB());
+            MatrixToImageConfig config = new MatrixToImageConfig(color.getRGB(), offColor.getRGB());
 
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream, config);
+            MatrixToImageWriter.writeToStream(bitMatrix, Constants.FORMAT_PNG, outputStream, config);
 
         } catch (WriterException e) {
             throw new RuntimeException(e);
@@ -60,30 +64,29 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
     }
 
     @Override
-    public byte[] generateQrCodeV2() {
-        return generateQRCodeImage("https://www.google.com", 300, 300, "./MyQRCode.png");
+    public byte[] generateDottedQrCode(String content, int[] colorRGB) {
+        log.info("Generando QR en formato punteado...");
+        return generateQRCodeImage(content, colorRGB);
     }
 
-
-    private void drawFinderPatternCircleStyle(Graphics2D graphics, int x, int y, int circleDiameter) {
+    private void drawFinderPatternCircleStyle(Graphics2D graphics, int x, int y, int circleDiameter, Color rgb) {
+        log.info("Modificando estilo QR...");
         final int WHITE_CIRCLE_DIAMETER = circleDiameter * 5 / 7;
         final int WHITE_CIRCLE_OFFSET = circleDiameter / 7;
         final int MIDDLE_DOT_DIAMETER = circleDiameter * 3 / 7;
         final int MIDDLE_DOT_OFFSET = circleDiameter * 2 / 7;
 
-        //Color customColor = new Color(255, 51, 178);
-        graphics.setColor(customColor);
+        graphics.setColor(rgb);
         graphics.fillOval(x, y, circleDiameter, circleDiameter);
         graphics.setColor(Color.white);
         graphics.fillOval(x + WHITE_CIRCLE_OFFSET, y + WHITE_CIRCLE_OFFSET, WHITE_CIRCLE_DIAMETER, WHITE_CIRCLE_DIAMETER);
-        graphics.setColor(customColor);
+        graphics.setColor(rgb);
         graphics.fillOval(x + MIDDLE_DOT_OFFSET, y + MIDDLE_DOT_OFFSET, MIDDLE_DOT_DIAMETER, MIDDLE_DOT_DIAMETER);
-
-
     }
 
+    private byte[] generateQRCodeImage(String text, int[] colorRGB){
+        log.info("Generando imagen QR...");
 
-    private byte[] generateQRCodeImage(String text, int width, int height, String filePath){
         final HashMap<EncodeHintType, Object> encodingHints = new HashMap<>();
         encodingHints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
         QRCode code = null;
@@ -92,26 +95,29 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
         } catch (WriterException e) {
             throw new RuntimeException(e);
         }
-        BufferedImage image = renderQRImage(code, width, height, 4);
+        BufferedImage image = renderQRImage(code, Constants.SIZE, Constants.SIZE, 4, colorRGB);
 
-        try (FileOutputStream stream = new FileOutputStream(filePath)) {
+        try (FileOutputStream stream = new FileOutputStream(Constants.PNG_PATH)) {
             stream.write(bufferedImageToByteArray(image));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+        deletePNG();
+
         return bufferedImageToByteArray(image);
     }
 
-    private BufferedImage renderQRImage(QRCode code, int width, int height, int quietZone) {
+    private BufferedImage renderQRImage(QRCode code, int width, int height, int quietZone, int[] colorRGB) {
+        log.info("Renderizando imagen QR...");
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
 
         graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         graphics.setBackground(Color.white);
         graphics.clearRect(0, 0, width, height);
-        //graphics.setColor(Color.black);
-        graphics.setColor(customColor);
+        Color rgb = new Color(colorRGB[0], colorRGB[1], colorRGB[2]);
+        graphics.setColor(rgb);
 
         ByteMatrix input = code.getMatrix();
         if (input == null) {
@@ -144,17 +150,25 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
         }
 
         int circleDiameter = multiple * FINDER_PATTERN_SIZE;
-        drawFinderPatternCircleStyle(graphics, leftPadding, topPadding, circleDiameter);
-        drawFinderPatternCircleStyle(graphics, leftPadding + (inputWidth - FINDER_PATTERN_SIZE) * multiple, topPadding, circleDiameter);
-        drawFinderPatternCircleStyle(graphics, leftPadding, topPadding + (inputHeight - FINDER_PATTERN_SIZE) * multiple, circleDiameter);
+        drawFinderPatternCircleStyle(graphics, leftPadding, topPadding, circleDiameter, rgb);
+        drawFinderPatternCircleStyle(graphics, leftPadding + (inputWidth - FINDER_PATTERN_SIZE) * multiple, topPadding, circleDiameter, rgb);
+        drawFinderPatternCircleStyle(graphics, leftPadding, topPadding + (inputHeight - FINDER_PATTERN_SIZE) * multiple, circleDiameter, rgb);
 
         return image;
     }
 
-        public byte[] bufferedImageToByteArray(BufferedImage image) {
+    private void deletePNG(){
+        File fileToDelete = new File(Constants.PNG_PATH);
+
+        if (fileToDelete.exists()) {
+            fileToDelete.delete();
+        }
+    }
+
+    private byte[] bufferedImageToByteArray(BufferedImage image) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
-            ImageIO.write(image, "png", outputStream); // Puedes especificar el formato de imagen deseado (en este caso, PNG)
+            ImageIO.write(image, Constants.FORMAT_PNG, outputStream); // Puedes especificar el formato de imagen deseado (en este caso, PNG)
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
