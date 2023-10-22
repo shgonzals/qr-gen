@@ -9,6 +9,7 @@ import com.google.zxing.qrcode.encoder.ByteMatrix;
 import com.google.zxing.qrcode.encoder.Encoder;
 import com.google.zxing.qrcode.encoder.QRCode;
 import com.shgonzal.qrgen.commons.Constants;
+import com.shgonzal.qrgen.commons.Utils;
 import com.shgonzal.qrgen.services.QRGeneratorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,6 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
             bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, Constants.SIZE, Constants.SIZE);
             outputStream = new ByteArrayOutputStream();
 
-            //TODO: Implementar un selector RGB
             Color offColor = Color.WHITE;
 
             //background and logo
@@ -98,14 +98,14 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
         BufferedImage image = renderQRImage(code, Constants.SIZE, Constants.SIZE, 4, colorRGB);
 
         try (FileOutputStream stream = new FileOutputStream(Constants.PNG_PATH)) {
-            stream.write(bufferedImageToByteArray(image));
+            stream.write(Utils.bufferedImageToByteArray(image));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         deletePNG();
 
-        return bufferedImageToByteArray(image);
+        return Utils.bufferedImageToByteArray(image);
     }
 
     private BufferedImage renderQRImage(QRCode code, int width, int height, int quietZone, int[] colorRGB) {
@@ -165,15 +165,6 @@ public class QRGeneratorServiceImpl implements QRGeneratorService {
         }
     }
 
-    private byte[] bufferedImageToByteArray(BufferedImage image) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(image, Constants.FORMAT_PNG, outputStream); // Puedes especificar el formato de imagen deseado (en este caso, PNG)
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
-        return outputStream.toByteArray();
-    }
 
 }
